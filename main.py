@@ -5,8 +5,9 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 
 # Google Cloud 인증 설정
-vision_client = vision.ImageAnnotatorClient.from_service_account_json("service_account.json")
-translate_client = translate.Client.from_service_account_json("service_account.json")
+vision_client = vision.ImageAnnotatorClient.from_service_account_json("path/to/service_account.json")
+translate_client = translate.Client.from_service_account_json("path/to/service_account.json")
+
 
 # 이미지 업로드 위젯
 uploaded_file = st.file_uploader("이미지를 업로드하세요", type=["jpg", "png"])
