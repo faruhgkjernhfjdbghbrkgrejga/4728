@@ -2,8 +2,17 @@ import streamlit as st
 import pytesseract
 from googletrans import Translator
 from PIL import Image, ImageDraw, ImageFont
+import subprocess
+import pytesseract
+from PIL import Image
 
+# Run setup script
+subprocess.call(["bash", "setup.sh"])
+
+# Set Tesseract path
 pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
+
+# Rest of your app code...
 
 
 # Translator 객체 생성
