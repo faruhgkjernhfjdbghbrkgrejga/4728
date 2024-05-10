@@ -1,11 +1,8 @@
-#main.py
-
 import streamlit as st
 from google.cloud import vision
 from googletrans import Translator
 import io
 from PIL import Image, ImageDraw, ImageFont
-from PIL import ImageEnhance
 import os
 
 # 시크릿에서 서비스 계정 키 파일 내용 가져오기
@@ -14,21 +11,14 @@ service_account_info = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
 # 서비스 계정 키 파일 내용을 환경 변수에 설정
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_info
 
-# 시크릿 로드
-key_path = st.secrets["google"]["key_path"]
-
 # Google Cloud Vision API 클라이언트 설정
-client = vision.ImageAnnotatorClient.from_service_account_file(key_path)
+client = vision.ImageAnnotatorClient.from_service_account_info(service_account_info)
 
 # Translator 객체 생성
 translator = Translator()
 
-def extract_text_from_image(image_path):
-    with io.open(image_path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = vision.Image(content=content)
-
+def extract_text_from_image(image_bytes):
+    image = vision.Image(content=image_bytes)
     response = client.text_detection(image=image)
     texts = response.text_annotations
 
@@ -52,9 +42,30 @@ if uploaded_file is not None:
     st.image(image, caption="업로드된 이미지", use_column_width=True)
 
     # 이미지에서 텍스트 추출 및 번역
-    extracted_text_1 = extract_text_from_image(io.BytesIO(uploaded_file.read()))
+    extracted_text_1 = extract_text_from_image(uploaded_file.read())
 
-    # 번역 및 이미지 처리 코드 ...
+    # 번역할 언어 선택
+    target_lang = st.selectbox("번역할 언어를 선택하세요", ["en", "ko", "ja", "zh-cn"])
+
+    # 번역된 텍스트 저장할 리스트
+    translated_texts = []
+
+    # 텍스트 번역
+    for text_info in extracted_text_1:
+        text = text_info['text']
+        translation = translator.translate(text, dest=target_lang)
+        translated_text = translation.text
+        translated_texts.append(translated_text)
+
+     # 번역된 텍스트를 이미지에 렌더링
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype("arial.ttf", 36)
+    for i, text_info in enumerate(extracted_text_1):
+        coordinates = text_info['coordinates']
+        draw.rectangle([(coordinates[0][0], coordinates[0][1]), (coordinates[2][0], coordinates[2][1])], fill="white")
+        text_position = (coordinates[0][0], coordinates[0][1])
+        draw.text(text_position, translated_texts[i], font=font, fill='black')
 
     # 처리된 이미지 표시
     st.image(image, caption="번역된 이미지", use_column_width=True)
+
