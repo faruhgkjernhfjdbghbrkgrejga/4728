@@ -5,6 +5,9 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 import os
 
+# .streamlit/secrets.toml
+GOOGLE_APPLICATION_CREDENTIALS = "/path/to/service_account.json"
+
 # 시크릿에서 서비스 계정 키 파일 경로 가져오기
 service_account_path = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
 
