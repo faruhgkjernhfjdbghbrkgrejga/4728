@@ -4,4 +4,7 @@ google-cloud-translate
 pillow
 pytesseract
 googletrans
-pillow
+opencv-python
+numpy
+pdf2image
+wand
