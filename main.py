@@ -3,10 +3,17 @@ from google.cloud import vision
 from google.cloud import translate
 from PIL import Image, ImageDraw, ImageFont
 import io
+import os
 
-# Google Cloud 인증 설정
-vision_client = vision.ImageAnnotatorClient.from_service_account_json("path/to/service_account.json")
-translate_client = translate.Client.from_service_account_json("path/to/service_account.json")
+# 시크릿에서 서비스 계정 키 파일 경로 가져오기
+service_account_path = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
+
+# 서비스 계정 키 파일 경로를 환경 변수에 설정
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_path
+
+# Google Cloud 클라이언트 초기화
+vision_client = vision.ImageAnnotatorClient()
+translate_client = translate.Client()
 
 
 # 이미지 업로드 위젯
