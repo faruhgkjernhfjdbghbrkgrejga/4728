@@ -3,8 +3,6 @@ import pytesseract
 from googletrans import Translator
 from PIL import Image, ImageDraw, ImageFont
 import subprocess
-import pytesseract
-from PIL import Image
 import os
 
 # Set Tesseract path based on the environment
@@ -18,12 +16,6 @@ else:
 # Run setup script
 subprocess.call(["bash", "setup.sh"])
 
-# Set Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
-
-# Rest of your app code...
-
-
 # Translator 객체 생성
 translator = Translator()
 
@@ -33,6 +25,7 @@ def extract_text_from_image(image):
 
 # 이미지 파일 업로드
 uploaded_file = st.file_uploader("이미지 파일 업로드", type=["jpg", "jpeg", "png"])
+
 
 if uploaded_file is not None:
     # 업로드된 파일을 열기
