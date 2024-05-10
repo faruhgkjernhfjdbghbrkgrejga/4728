@@ -8,6 +8,10 @@ from PIL import ImageEnhance
 # Google Cloud 프로젝트의 서비스 계정 키를 설정합니다.
 key_path = r"C:\Users\kimjunghoo\Desktop\pycode\second-hexagon-419606-bb9716b159fc.json"
 client = vision.ImageAnnotatorClient.from_service_account_json(key_path)
+# Google Cloud 프로젝트의 서비스 계정 키를 설정합니다.
+credentials = service_account.Credentials.from_service_account_file('service_account_key.json')
+client = vision.ImageAnnotatorClient(credentials=credentials)
+
 
 # Translator 객체 생성
 translator = Translator()
