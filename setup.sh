@@ -10,6 +10,7 @@ pip install -r requirements.txt
 
 # Install Tesseract OCR
 apt-get install -y tesseract-ocr
+apt-get install -y libtesseract-dev
 
 # Install English language data
 apt-get install -y tesseract-ocr-eng
