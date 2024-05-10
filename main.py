@@ -3,8 +3,8 @@ import pytesseract
 from googletrans import Translator
 from PIL import Image, ImageDraw, ImageFont
 
-# Tesseract OCR 엔진 경로 지정
-# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # 윈도우 경로 예시
+pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
+
 
 # Translator 객체 생성
 translator = Translator()
