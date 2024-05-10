@@ -1,9 +1,18 @@
+#main.py
+
 import streamlit as st
 from google.cloud import vision
 from googletrans import Translator
 import io
 from PIL import Image, ImageDraw, ImageFont
 from PIL import ImageEnhance
+import os
+
+# 시크릿에서 서비스 계정 키 파일 내용 가져오기
+service_account_info = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
+
+# 서비스 계정 키 파일 내용을 환경 변수에 설정
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account_info
 
 # 시크릿 로드
 key_path = st.secrets["google"]["key_path"]
