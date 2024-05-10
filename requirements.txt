@@ -2,7 +2,7 @@ streamlit
 google-cloud-vision
 google-cloud-translate
 pillow
-pytesseract==0.3.8
+pytesseract
 googletrans
 opencv-python
 numpy
