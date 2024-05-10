@@ -1,4 +1,4 @@
-google-cloud-vision
-googletrans==4.0.0-rc1
-Pillow
 streamlit
+google-cloud-vision
+google-cloud-translate
+pillow
