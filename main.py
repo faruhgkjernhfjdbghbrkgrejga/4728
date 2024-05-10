@@ -5,6 +5,15 @@ from PIL import Image, ImageDraw, ImageFont
 import subprocess
 import pytesseract
 from PIL import Image
+import os
+
+# Set Tesseract path based on the environment
+if os.environ.get('STREAMLIT_CLOUD'):
+    pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
+else:
+    # Set the path for your local environment
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Windows 예시
+    # pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'  # macOS/Linux 예시
 
 # Run setup script
 subprocess.call(["bash", "setup.sh"])
