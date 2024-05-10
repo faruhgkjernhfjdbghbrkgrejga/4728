@@ -3,6 +3,10 @@ import pytesseract
 from googletrans import Translator
 from PIL import Image, ImageDraw, ImageFont
 
+# Tesseract OCR 엔진 경로 지정
+pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'  # 리눅스/맥OS 경로 예시
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # 윈도우 경로 예시
+
 # Translator 객체 생성
 translator = Translator()
 
@@ -37,4 +41,3 @@ if uploaded_file is not None:
 
     # 처리된 이미지 표시
     st.image(image, caption="번역된 이미지", use_column_width=True)
-
