@@ -2,3 +2,6 @@ streamlit
 google-cloud-vision
 google-cloud-translate
 pillow
+pytesseract
+googletrans
+pillow
