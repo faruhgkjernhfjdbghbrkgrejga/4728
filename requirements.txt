@@ -7,7 +7,7 @@ google-cloud-translate
 google-cloud-vision
 tesseract
 tesseract-ocr
-
+pytesseract
 
 
 
