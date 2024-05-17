@@ -1,53 +1,96 @@
 import streamlit as st
-import pytesseract
-from googletrans import Translator
-from PIL import Image, ImageDraw, ImageFont
-import subprocess
-import os
+import torch
+from PIL import Image
+from torchvision.transforms import functional as TF
+import torch.nn as nn
 
-# Set Tesseract path based on the environment
-if os.environ.get('STREAMLIT_CLOUD'):
-    pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
-else:
-    # Set the path for your local environment
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Windows 예시
-    # pytesseract.pytesseract.tesseract_cmd = r'/usr/local/bin/tesseract'  # macOS/Linux 예시
+# UNet 모델 정의
+class UNet(nn.Module):
+    def __init__(self):
+        super(UNet, self).__init__()
+        # 인코더
+        self.down1 = self.contract_block(3, 64, 3, 1)
+        self.down2 = self.contract_block(64, 128, 3, 1)
+        self.down3 = self.contract_block(128, 256, 3, 1)
+        self.down4 = self.contract_block(256, 512, 3, 1)
 
-# Run setup script
-subprocess.call(["bash", "setup.sh"])
+        # 최소 크기에 도달
+        self.middle = self.contract_block(512, 1024, 3, 1)
 
-# Translator 객체 생성
-translator = Translator()
+        # 디코더
+        self.up4 = self.expand_block(1024, 512, 3, 1)
+        self.up3 = self.expand_block(512, 256, 3, 1)
+        self.up2 = self.expand_block(256, 128, 3, 1)
+        self.up1 = self.expand_block(128, 64, 3, 1)
 
-def extract_text_from_image(image):
-    text = pytesseract.image_to_string(image)
-    return text
+        # 최종 컨볼루션
+        self.final = nn.Conv2d(64, 1, kernel_size=1)
 
-# 이미지 파일 업로드
-uploaded_file = st.file_uploader("이미지 파일 업로드", type=["jpg", "jpeg", "png"])
+    def __call__(self, x):
+        # 인코더
+        d1 = self.down1(x)
+        d2 = self.down2(d1)
+        d3 = self.down3(d2)
+        d4 = self.down4(d3)
 
+        # 중간
+        m = self.middle(d4)
+
+        # 디코더
+        up4 = self.up4(m)
+        up3 = self.up3(up4 + d4)
+        up2 = self.up2(up3 + d3)
+        up1 = self.up1(up2 + d2)
+
+        # 최종 컨볼루션
+        out = self.final(up1)
+        return out
+
+    def contract_block(self, in_channels, out_channels, kernel_size, padding):
+        contract = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+        return contract
+
+    def expand_block(self, in_channels, out_channels, kernel_size, padding):
+        expand = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.ReLU(inplace=True)
+        )
+        return expand
+
+def transform_image(image):
+    # 이미지 전처리
+    image = TF.to_tensor(image)
+    image = TF.resize(image, size=(256, 256))
+    return image.unsqueeze(0)  # 배치 차원 추가
+
+# 스트림릿 앱 시작
+st.title('이미지 번역기')
+
+# 파일 업로더
+uploaded_file = st.file_uploader("이미지 파일을 선택하세요.", type=['png', 'jpg', 'jpeg'])
 
 if uploaded_file is not None:
-    # 업로드된 파일을 열기
-    image = Image.open(uploaded_file)
+    image = Image.open(uploaded_file).convert('RGB')
+    st.image(image, caption='업로드된 이미지', use_column_width=True)
 
-    # 이미지 표시
-    st.image(image, caption="업로드된 이미지", use_column_width=True)
+    # 이미지 변환
+    model = UNet()  # 모델 인스턴스 생성
+    input_image = transform_image(image)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    input_image = input_image.to(device)  # Added this line to move input_image to the same device as the model
+    with torch.no_grad():
+        output_image = model(input_image)
+        output_image = TF.to_pil_image(output_image.squeeze(0))
 
-    # 이미지에서 텍스트 추출
-    extracted_text = extract_text_from_image(image)
+    st.image(output_image, caption='변환된 이미지', use_column_width=True)
+    output_image.save('translated_image.png')
 
-    # 번역할 언어 선택
-    target_lang = st.selectbox("번역할 언어를 선택하세요", ["en", "ko", "ja", "zh-cn"])
-
-    # 텍스트 번역
-    translation = translator.translate(extracted_text, dest=target_lang)
-    translated_text = translation.text
-
-    # 번역된 텍스트 렌더링
-    draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("arial.ttf", 36)
-    draw.text((10, 10), translated_text, font=font, fill='red')
-
-    # 처리된 이미지 표시
-    st.image(image, caption="번역된 이미지", use_column_width=True)
