@@ -5,7 +5,6 @@ Pillow
 pytesseract
 google-cloud-translate
 google-cloud-vision
-tesseract-ocr
 pytesseract
 
 
