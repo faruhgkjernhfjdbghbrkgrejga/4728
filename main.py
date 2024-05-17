@@ -54,10 +54,11 @@ def draw_text_on_image(image_path, text):
     x = (width - text_width) / 2
     y = (height - text_height) / 2
     draw.text((x, y), text, font=font, fill="red")
-    # 이미지 저장 경로 설정
-    output_path = os.path.join("tempDir", "translated_image.png")
-    image.save(output_path)
-    return output_path
+    # 이미지를 바이트 스트림으로 변환하여 반환
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format='PNG')
+    img_byte_arr = img_byte_arr.getvalue()
+    return img_byte_arr
 
 st.title('이미지 번역기')
 
@@ -72,9 +73,8 @@ if uploaded_file is not None:
             st.write("추출된 텍스트:", extracted_text)
             translated_text = translate_text(extracted_text, 'ko')
             st.write("번역된 텍스트:", translated_text)
-            image_with_text_path = draw_text_on_image(image_path, translated_text)
-            image_with_text = Image.open(image_with_text_path)
-            st.image(image_with_text, caption='번역된 이미지', use_column_width=True)
+            image_with_text = draw_text_on_image(image_path, translated_text)
+            st.image(image_with_text, caption='번역된 이미지', use_column_width=True, format='PNG')
         else:
             st.write("이미지에서 텍스트를 찾을 수 없습니다.")
             st.write("이미지에서 텍스트를 찾을 수 없습니다.")
