@@ -5,33 +5,6 @@ from torchvision.transforms import functional as TF
 import torch.nn as nn
 import pytesseract
 from google.cloud import translate_v2 as translate
-from google.cloud import vision
-from googletrans import Translator
-import io
-
-# Google Cloud 프로젝트의 서비스 계정 키를 설정합니다.
-key_path = "path_to_your_service_account_key.json"
-client = vision.ImageAnnotatorClient.from_service_account_json(key_path)
-
-# Translator 객체 생성
-translator = Translator()
-
-def extract_and_translate_text(image_path, target_language='ko'):
-    """ 이미지에서 텍스트를 추출하고 번역합니다. """
-    with io.open(image_path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = vision.Image(content=content)
-    response = client.text_detection(image=image)
-    texts = response.text_annotations
-
-    translated_texts = []
-    for text in texts:
-        detected_language = translator.detect(text.description).lang
-        translated_text = translator.translate(text.description, src=detected_language, dest=target_language)
-        translated_texts.append(translated_text.text)
-
-    return translated_texts
 
 # UNet 모델 정의
 class UNet(nn.Module):
@@ -144,8 +117,3 @@ if uploaded_file is not None:
     # 추출된 텍스트를 영어로 번역
     translated_text = translate_text(extracted_text, 'en')
     st.write("번역된 텍스트:", translated_text)
-
-    # 이미지에서 텍스트 추출 및 번역
-    translated_texts = extract_and_translate_text(uploaded_file, 'ko')
-    st.write("번역된 텍스트:", translated_texts)
-
