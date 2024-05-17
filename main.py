@@ -5,11 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 import os
 
-# Repository secrets에서 GOOGLE_APPLICATION_CREDENTIALS 값 가져오기
-google_application_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-
-# GOOGLE_APPLICATION_CREDENTIALS 값을 환경 변수로 설정
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = google_application_credentials
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
 
 
 def extract_text(image_path):
