@@ -3,6 +3,8 @@ import torch
 from PIL import Image
 from torchvision.transforms import functional as TF
 import torch.nn as nn
+import pytesseract
+from google.cloud import translate_v2 as translate
 
 # UNet 모델 정의
 class UNet(nn.Module):
@@ -71,6 +73,20 @@ def transform_image(image):
     image = TF.resize(image, size=(256, 256))
     return image.unsqueeze(0)  # 배치 차원 추가
 
+# Google Cloud Translation API 클라이언트 설정
+translate_client = translate.Client()
+
+def ocr_image(image_path):
+    """ 이미지에서 텍스트 추출 """
+    image = Image.open(image_path)
+    text = pytesseract.image_to_string(image)
+    return text
+
+def translate_text(text, target_language='en'):
+    """ 텍스트 번역 """
+    result = translate_client.translate(text, target_language=target_language)
+    return result['translatedText']
+
 # 스트림릿 앱 시작
 st.title('이미지 번역기')
 
@@ -94,3 +110,10 @@ if uploaded_file is not None:
     st.image(output_image, caption='변환된 이미지', use_column_width=True)
     output_image.save('translated_image.png')
 
+    # OCR을 통해 이미지에서 텍스트 추출
+    extracted_text = ocr_image('translated_image.png')
+    st.write("추출된 텍스트:", extracted_text)
+
+    # 추출된 텍스트를 영어로 번역
+    translated_text = translate_text(extracted_text, 'en')
+    st.write("번역된 텍스트:", translated_text)
