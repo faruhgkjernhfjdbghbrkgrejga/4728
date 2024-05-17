@@ -3,9 +3,8 @@ import torch
 from PIL import Image
 from torchvision.transforms import functional as TF
 import torch.nn as nn
-from google.cloud import vision, translate_v2 as translate
-import io
-from PIL import Image, ImageDraw, ImageFont
+import pytesseract
+from google.cloud import translate_v2 as translate
 
 # UNet 모델 정의
 class UNet(nn.Module):
@@ -75,19 +74,16 @@ def transform_image(image):
     return image.unsqueeze(0)  # 배치 차원 추가
 
 # Google Cloud Translation API 클라이언트 설정
-api_key = st.secrets["google_api_key"]
-translate_client = translate.Client(api_key)
+translate_client = translate.Client()
 
-def extract_text_from_image(image_path):
-    with io.open(image_path, 'rb') as image_file:
-        content = image_file.read()
-    image = vision.Image(content=content)
-    response = vision_client.text_detection(image=image)
-    texts = response.text_annotations
-    extracted_text = [{'text': text.description, 'coordinates': [(vertex.x, vertex.y) for vertex in text.bounding_poly.vertices]} for text in texts]
-    return extracted_text
+def ocr_image(image_path):
+    """ 이미지에서 텍스트 추출 """
+    image = Image.open(image_path)
+    text = pytesseract.image_to_string(image)
+    return text
 
 def translate_text(text, target_language='en'):
+    """ 텍스트 번역 """
     result = translate_client.translate(text, target_language=target_language)
     return result['translatedText']
 
@@ -115,18 +111,9 @@ if uploaded_file is not None:
     output_image.save('translated_image.png')
 
     # OCR을 통해 이미지에서 텍스트 추출
-    extracted_texts = extract_text_from_image('translated_image.png')
-    translated_texts = [translate_text(text_info['text']) for text_info in extracted_texts]
+    extracted_text = ocr_image('translated_image.png')
+    st.write("추출된 텍스트:", extracted_text)
 
-    # 이미지 처리 및 텍스트 오버레이
-    image = Image.open('translated_image.png')
-    draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("/content/Untitled Folder/NanumGothic.ttf", 36, encoding="utf-8")
-
-    for text_info, translated_text in zip(extracted_texts, translated_texts):
-        coordinates = text_info['coordinates']
-        text_position = (coordinates[0][0], coordinates[0][1])
-        draw.text(text_position, translated_text, fill='black', font=font)
-
-    image.save("final_image_with_text.png")
-
+    # 추출된 텍스트를 영어로 번역
+    translated_text = translate_text(extracted_text, 'en')
+    st.write("번역된 텍스트:", translated_text)
