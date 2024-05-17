@@ -26,7 +26,7 @@ def draw_text_on_image(image, text):
     draw.text((x, y), text, font=font, fill="red")
     return image
 
-st.title('이미지-이미지 언어 번역기')
+st.title('이미지 번역기')
 
 uploaded_file = st.file_uploader("이미지 파일을 업로드하세요.", type=['png', 'jpg', 'jpeg'])
 src_lang = st.text_input("출발 언어 코드 (예: en, ko)", 'en')
