@@ -1,15 +1,28 @@
 import streamlit as st
+from google.oauth2 import service_account
 from google.cloud import vision
 from google.cloud import translate_v2 as translate
 from PIL import Image, ImageDraw, ImageFont
 import io
 import os
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
+# 서비스 계정 키 정보를 직접 사용
+credentials = service_account.Credentials.from_service_account_info({
+    "type": st.secrets["type"],
+    "project_id": st.secrets["project_id"],
+    "private_key_id": st.secrets["private_key_id"],
+    "private_key": st.secrets["private_key"],
+    "client_email": st.secrets["client_email"],
+    "client_id": st.secrets["client_id"],
+    "auth_uri": st.secrets["auth_uri"],
+    "token_uri": st.secrets["token_uri"],
+    "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
+    "client_x509_cert_url": st.secrets["client_x509_cert_url"]
+})
 
+client = vision.ImageAnnotatorClient(credentials=credentials)
 
 def extract_text(image_path):
-    client = vision.ImageAnnotatorClient()
     with io.open(image_path, 'rb') as image_file:
         content = image_file.read()
     image = vision.Image(content=content)
@@ -58,4 +71,4 @@ if uploaded_file is not None:
             st.image(image_with_text, caption='번역된 이미지', use_column_width=True)
         else:
             st.write("이미지에서 텍스트를 찾을 수 없습니다.")
-
+            st.write("이미지에서 텍스트를 찾을 수 없습니다.")
